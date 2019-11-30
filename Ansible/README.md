@@ -10,6 +10,11 @@
   - [Configuring hosts in the inventory](#configuring-hosts-in-the-inventory)
     - [Testing the inventory](#testing-the-inventory)
   - [Writing the first playbook](#writing-the-first-playbook)
+    - [Understanding Ansible Modules](#understanding-ansible-modules)
+    - [Improving your playbook with roles](#improving-your-playbook-with-roles)
+  - [Executing Ansible](#executing-ansible)
+    - [Using the preview or dry run option](#using-the-preview-or-dry-run-option)
+    - [Increasing the log level output](#increasing-the-log-level-output)
 
 ## Install Ansible
 
@@ -168,4 +173,93 @@ ansible -i myinventory webserver -u constantinhager -m ping
 ```
 
 ## Writing the first playbook
+
+The code of a playbook is written in yaml. The Ansible playbook is, therefore, a sequence of actions that are encoded
+in Ansible modules.
+
+### Understanding Ansible Modules
+
+The complete list of built in Ansible modules is available here: [Ansible modules list](https://docs.ansible.com/ansible/latest/modules/list_of_all_modules.html)
+
+### Improving your playbook with roles
+
+If you have a repetitive task you need to encapsulate the task into an Ansible module. To do that we need to create a folder called "role"
+that can be used by several playbooks.
+
+A sample folder structure could look like this:
+
+Root
+    inventory
+    Playbook.yml
+    roles
+      nginx
+        tasks
+          main.yml
+
+We can write our own Ansible module or use Ansible galaxy [Ansible Galaxy](https://galaxy.ansible.com), where we can download the
+roles from the Ansible community.
+
+## Executing Ansible
+
+To run an Ansible playbook execute the following command:
+
+```bash
+ansible-playbook -i inventory playbook.yml
+```
+
+Parameters:
+ -i : the inventory file path
+ playbook.yml: the path of the Ansible playbook to execute.
+
+If you execute an Ansible playbook the following sequence will be executed:
+
+- Gathering facts: Ansible checks that the hosts are reachable.
+- The tasks playbook is executed on hosts.
+- Play Recap: This is the status of the changes that were executed on each host; the value of this status can be as follows:
+
+| State  | Explanation  |
+|---|---|
+| ok  |  This is the number of playbook tasks that have been correctly applied to the host. |
+| changed  |  This is the number of changes applied |
+| unreachable  | The host is unreachable  |
+| failed | Execution failed on this host. |
+
+If an existing Ansible playbook needs to be modified and is executed again not the complete Ansible
+playbook is executed. Only changes of the Ansible playbook are executed.
+
+We can also add some useful option to this command to provide the following:
+
+- A preview of Ansible changes before applying the changes
+- More logs in the execution output.
+
+### Using the preview or dry run option
+
+To check if the steps in a playbook are correct we can preview the changes that
+we make with the steps. To do that we use the --check parameter in the ansible-playbook command
+
+```bash
+ansible-playbook -i inventory playbook.yml --check
+```
+
+With this parameter no changes to the hosts are made but the preview shows what changes
+could have been made by the Ansible playbook.
+
+### Increasing the log level output
+
+There are three log levels in Ansible they are listed below
+
+| Log Level | Explanation |
+| --------- | ----------  |
+| -v        | basic verbose mode |
+| -vvv      | verbose mode with more outputs |
+| -vvvv     | verbose mode and the connection debugging information |
+
+The following command will display basic verbose mode
+
+```bash
+ansible-playbook -i inventory playbook.yml -v
+```
+
+The complete documentation on the ansible-playbook command is available here:
+[ansible-playbook documentation](https://docs.ansible.com/ansible/2.4/ansible-playbook.html)
 

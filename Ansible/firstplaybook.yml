@@ -1,0 +1,12 @@
+---
+- hosts: all
+    tasks:
+    - name: install and check nginx latest version
+        apt:
+            name: nginx # not required. A list of package names, like C(foo), or package specifier with version, like C(foo=1.0). Name wildcards (fnmatch) like C(apt*) and version wildcards like C(foo=1.0*) are also supported.
+            state: latest # not required. choices: absent;build-dep;latest;present. Indicates the desired package state. C(latest) ensures that the latest version is installed. C(build-dep) ensures the package build dependencies are installed.
+    - name: start nginx
+        service:
+            name: nginx # required. Name of the service.
+            state: started # not required. choices: reloaded;restarted;started;stopped. C(started)/C(stopped) are idempotent actions that will not run commands unless necessary.  C(restarted) will always bounce the service.  C(reloaded) will always reload. B(At least one of state and enabled are required.) Note that reloaded will start the service if it is not already started, even if your chosen init system wouldn't normally.
+---
