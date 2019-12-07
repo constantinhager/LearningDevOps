@@ -1,5 +1,10 @@
 ---
-- hosts: all
-    roles:
-        - nginx
----
+- hosts: webserver
+  become: true
+  roles:
+   - nginx
+
+- hosts: database
+  become: true
+  roles:
+   - mysql

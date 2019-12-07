@@ -1,0 +1,15 @@
+- name: install python-mysqldb
+  yum:
+      name: python-mysqldb
+  vars:
+      packages:
+      - python-mysqldb
+      - mysql-server
+
+- name: create mysql user
+  mysql_user:
+    name={{ mysql_user }}
+    password={{ mysql_password }}
+    priv=*.*:ALL
+    state=present
+

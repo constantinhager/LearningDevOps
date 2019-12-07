@@ -15,6 +15,10 @@
   - [Executing Ansible](#executing-ansible)
     - [Using the preview or dry run option](#using-the-preview-or-dry-run-option)
     - [Increasing the log level output](#increasing-the-log-level-output)
+  - [Protecting data with Ansible Vault](#protecting-data-with-ansible-vault)
+    - [Using variables in Ansible for better configuration](#using-variables-in-ansible-for-better-configuration)
+    - [Protecting sensitive data with Ansible Vault](#protecting-sensitive-data-with-ansible-vault)
+  - [Using a dynamic inventory for Azure infrastructure](#using-a-dynamic-inventory-for-azure-infrastructure)
 
 ## Install Ansible
 
@@ -217,12 +221,12 @@ If you execute an Ansible playbook the following sequence will be executed:
 - The tasks playbook is executed on hosts.
 - Play Recap: This is the status of the changes that were executed on each host; the value of this status can be as follows:
 
-| State  | Explanation  |
-|---|---|
-| ok  |  This is the number of playbook tasks that have been correctly applied to the host. |
-| changed  |  This is the number of changes applied |
-| unreachable  | The host is unreachable  |
-| failed | Execution failed on this host. |
+| State       | Explanation                                                                        |
+| ----------- | ---------------------------------------------------------------------------------- |
+| ok          | This is the number of playbook tasks that have been correctly applied to the host. |
+| changed     | This is the number of changes applied                                              |
+| unreachable | The host is unreachable                                                            |
+| failed      | Execution failed on this host.                                                     |
 
 If an existing Ansible playbook needs to be modified and is executed again not the complete Ansible
 playbook is executed. Only changes of the Ansible playbook are executed.
@@ -248,10 +252,10 @@ could have been made by the Ansible playbook.
 
 There are three log levels in Ansible they are listed below
 
-| Log Level | Explanation |
-| --------- | ----------  |
-| -v        | basic verbose mode |
-| -vvv      | verbose mode with more outputs |
+| Log Level | Explanation                                           |
+| --------- | ----------------------------------------------------- |
+| -v        | basic verbose mode                                    |
+| -vvv      | verbose mode with more outputs                        |
 | -vvvv     | verbose mode and the connection debugging information |
 
 The following command will display basic verbose mode
@@ -263,3 +267,227 @@ ansible-playbook -i inventory playbook.yml -v
 The complete documentation on the ansible-playbook command is available here:
 [ansible-playbook documentation](https://docs.ansible.com/ansible/2.4/ansible-playbook.html)
 
+## Protecting data with Ansible Vault
+
+In Ansible you can make your playbooks dynamic by passing variables to them. Sometimes
+variables contain sensitive information. We need to protect this sensitive information.
+This can be for example a SQL Server Connection String.
+
+### Using variables in Ansible for better configuration
+
+If you deploy IaC you often have two parts
+
+- the description of the infrastructure
+- the differentiation from one environment to the other.
+
+the differentiation part in Ansible is done with variables. Ansible has a whole system
+that allows us to inject variables into playbooks.
+
+We added a role called mysql where we have the following variables:
+
+- packages
+- mysql_user
+- mysql_password
+
+The tasks of this role are as follows:
+
+- Updating packages
+- Installing the MySQL Server and the Python MySQL packages
+- Create a MySQL user
+
+the variables mysql_user and mysql_password can be dynamic. It depends on your environment.
+
+To define these variables. The first step is to create a folder in our module called "group_vars", which
+will contain all of the values of variables for each group defined in our inventory.
+
+So for example if we need to create variable for the inventory section database we need to create a folder database
+in group_vars. In this folder there needs to be a main.yml file, where we define the variables.
+
+As we can see we provide the mysql_password in clear text. This raises security issues.
+
+For this we can use Ansible Vault.
+
+### Protecting sensitive data with Ansible Vault
+
+We can encrypt and decrypt sensitive information on the fly with Ansible Vault.
+
+To encrypt for example the group_vars/database/main.yml you have to execute the following line:
+
+```bash
+ansible-vault encrypt group_vars/database/main.yml
+```
+
+Ansible Vault asks you for a password and displays the status of the encryption.
+
+If you now open the file the content is encrypted.
+
+If you want to make any changes to the file you need to decrypt the file first
+by running this command:
+
+```bash
+ansible-vault decrypt group_vars/database/main.yml
+```
+
+Ansible Vault will ask you for the encryption password and will decrypt the file, so It becomes
+readable again.
+
+If you use Ansible in a pipeline scenario, it is preferable to store the password in a file in a protected
+location, fore example, in the ~/.vault_pass.txt file.
+
+If we have that file we can decrypt the Ansible variables file with the parameter --vault-password-file like this:
+
+```bash
+ansible-vault encrypt group_vars/database/main.yml --vault-password-file ~/.vault_pass.txt
+```
+
+Now that the file is encrypted and the data is protected, we will run Ansible with the following commands:
+
+In interactive mode, we will run the following:
+
+```bash
+ansible-playbook -i inventory playbook.yml --ask-vaul-pass
+```
+
+In the pipeline scenario we can add the --vault-password-file parameter with the path of the file that contains the
+password to decrypt the data:
+
+```bash
+ansible-playbook -i inventory playbook.yml --vault-password-file ~/.vault-pass.txt
+```
+
+## Using a dynamic inventory for Azure infrastructure
+
+Ansible completely relies on the inventory file for distributing the Ansible playbooks. If we have an environment
+that is static we only need to create the inventory file once. But if we have an environment that is constantly changing
+it becomes very challenging to maintain the inventory file. That is the reason why there are inventory scripts.
+
+They are mostly provided by cloud vendors. We can even write our own inventory scripts in Python.
+
+In this section we will see how to set up a dynamic inventory of Azure VMs.
+
+1. Enable Ansible to access Azure resources. We again need an Azure service principal for that.
+   create the following environment variables:
+
+   ```bash
+   export AZURE_SUBSCRIPTION_ID=<subscription_id>
+   export AZURE_CLIENT_ID=<client ID>
+   export AZURE_SECRET=<client Secret>
+   export AZURE_TENANT=<tenant ID>
+   ```
+2. Then to be able to generate an inventory with group and tho filter VMs, it is necessarey to add Tags to the VMs.
+   Tags can be addes using Terraform and az cls command or an Azure PowerShell script.
+
+   Example of and az cli script:
+
+   ```bash
+   az resource tag --tags role=webserver -n centosnginx -g NGinx --resource-type "Microsoft.Compute/virtualMachines"
+   ```
+
+   Example of a PowerShell script:
+
+   ```powershell
+   $tags = (Get-AzResource -ResourceGroupName Workshop -Name DC2).Tags
+
+   if($tags -eq $null)
+   {
+     $tag = @{Role = "webserver"}
+     $splat = @{
+       ResourcegroupName = "NGinx"
+       ResourceName = "centosnginx"
+       ResourceType = "Microsoft.Compute/virtualMachines"
+       Tag = $tag
+       Force = $true
+     }
+
+     Set-AzResource @splat
+   }
+   else
+   {
+     $tags.add("Role", "webserver")
+
+     $splat = @{
+       ResourcegroupName = "NGinx"
+       ResourceName = "centosnginx"
+       ResourceType = "Microsoft.Compute/virtualMachines"
+       Tag = $tags
+       Force = $true
+     }
+
+     Set-AzResource @splat
+   }
+   ```
+
+3. Install the Python Azure SDK on the machine that runs Ansible with the following
+   command:
+
+   ```python
+   pip install azure
+   ```
+
+   Create a folder in the AnsibleModule root called inventories
+
+   Download the Python inventory script from this site [azure_rm.py](https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/azure_rm.py)
+
+   After that download also the inventory configuration file from this site [azure_rm.ini](https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/azure_rm.ini)
+
+   Change the follwing lines in the azure_rm.ini file:
+
+   - group_by_resource_group=no
+   - group_by_location=no
+   - group_by_security_group=no
+   - group_by_os_family=no
+   - group_by_tag=yes
+
+   Also add the following if you do need that:
+
+   - use_private_ip = yes
+
+   Give the user execution permissions with the following command:
+
+   ```bash
+   chmod +x azure_rm.py
+   ```
+
+4. As regards the inventory, we could very well stop there, but the problem is that we have to reconstitute an invetory
+that contains the same group of hosts as our original static inventory. To ensure that our dynamic inventory can be used by our
+playbook, we need to install nginx on all hosts in the webserver group and install MySQL on all host in the database group
+
+To have a dynamic inventory that contains our web server and database groups, we will, in our inventories folder, creat a file called
+book that will have the follwing conent
+
+```bash
+;init azure group to remove warning
+[webserver:children]
+role_webserver
+
+[database:children]
+role_database
+
+[all:vars]
+ansible_user=demobook11
+ansible_password=xxxxxxx #if login to vm need password
+```
+
+5. Test the dynamic inventory. To do that we need to run the following command:
+
+   ```bash
+   ansible-inventory -i inventories/azure_rm.py --list
+   ```
+
+   To run that command in graph mode use the following command:
+
+   ```bash
+   ansible-inventory -i inventories/azure_rm.py --graph
+   ```
+
+   To check this dynamic inventory now run the following command:
+
+   ```bash
+   ansible-playbook -i inventories/ Playbook.yml --check --vault-password-file ~/.vault_pass.txt
+   ```
+
+   To use this dynamic inventory now run the following command:
+
+   ```bash
+   ansible-playbook -i inventories/ Playbook.yml --vault-password-file ~/.vault_pass.txt
+   ```

@@ -1,0 +1,10 @@
+;init azure group to remove warning
+[webserver:children]
+role_webserver
+
+[database:children]
+role_database
+
+[all:vars]
+ansible_user=xxxx
+ansible_password=xxxx
