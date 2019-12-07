@@ -22,7 +22,7 @@
 
 ## Install Ansible
 
-Ansible is not multiplatform and can therefore only be installed on the following OSes:
+Ansible is not multi platform and can therefore only be installed on the following OSes:
 
 - Red Hat
 - Debian
@@ -88,7 +88,7 @@ ansible-config view
 
 ## Creating an inventory for targeting Ansible hosts
 
-This is a list of all hosts which are configured by Ansible. There are two types of invetories:
+This is a list of all hosts which are configured by Ansible. There are two types of inventories:
 
 - Static inventory: Hosts are listed in a text file in INI or YAML format. This is the basic mode of Ansible
 inventory. That static inventory can only be used if we know the host addresses.
@@ -345,7 +345,7 @@ Now that the file is encrypted and the data is protected, we will run Ansible wi
 In interactive mode, we will run the following:
 
 ```bash
-ansible-playbook -i inventory playbook.yml --ask-vaul-pass
+ansible-playbook -i inventory playbook.yml --ask-vault-pass
 ```
 
 In the pipeline scenario we can add the --vault-password-file parameter with the path of the file that contains the
@@ -374,8 +374,9 @@ In this section we will see how to set up a dynamic inventory of Azure VMs.
    export AZURE_SECRET=<client Secret>
    export AZURE_TENANT=<tenant ID>
    ```
-2. Then to be able to generate an inventory with group and tho filter VMs, it is necessarey to add Tags to the VMs.
-   Tags can be addes using Terraform and az cls command or an Azure PowerShell script.
+
+2. Then to be able to generate an inventory with group and tho filter VMs, it is necessary to add Tags to the VMs.
+   Tags can be added using Terraform and az cls command or an Azure PowerShell script.
 
    Example of and az cli script:
 
@@ -430,7 +431,7 @@ In this section we will see how to set up a dynamic inventory of Azure VMs.
 
    After that download also the inventory configuration file from this site [azure_rm.ini](https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/azure_rm.ini)
 
-   Change the follwing lines in the azure_rm.ini file:
+   Change the following lines in the azure_rm.ini file:
 
    - group_by_resource_group=no
    - group_by_location=no
@@ -448,25 +449,25 @@ In this section we will see how to set up a dynamic inventory of Azure VMs.
    chmod +x azure_rm.py
    ```
 
-4. As regards the inventory, we could very well stop there, but the problem is that we have to reconstitute an invetory
-that contains the same group of hosts as our original static inventory. To ensure that our dynamic inventory can be used by our
-playbook, we need to install nginx on all hosts in the webserver group and install MySQL on all host in the database group
+4. As regards the inventory, we could very well stop there, but the problem is that we have to reconstitute an inventory
+   that contains the same group of hosts as our original static inventory. To ensure that our dynamic inventory can be used by our
+   playbook, we need to install nginx on all hosts in the webserver group and install MySQL on all host in the database group
 
-To have a dynamic inventory that contains our web server and database groups, we will, in our inventories folder, creat a file called
-book that will have the follwing conent
+   To have a dynamic inventory that contains our web server and database groups, we will, in our inventories folder, create a file called
+   book that will have the following content
 
-```bash
-;init azure group to remove warning
-[webserver:children]
-role_webserver
+   ```bash
+   ;init azure group to remove warning
+   [webserver:children]
+   role_webserver
 
-[database:children]
-role_database
+   [database:children]
+   role_database
 
-[all:vars]
-ansible_user=demobook11
-ansible_password=xxxxxxx #if login to vm need password
-```
+   [all:vars]
+   ansible_user=demobook11
+   ansible_password=xxxxxxx #if login to vm need password
+   ```
 
 5. Test the dynamic inventory. To do that we need to run the following command:
 
