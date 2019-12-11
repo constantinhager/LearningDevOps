@@ -183,9 +183,11 @@ This is where the storage account key is going.
 
 In my backend.tfvars file is the following content:
 
+```bash
 storage_account_name = Name of the storage account that you just created
 container_name       = The container inside of the storage account the you just created
 key                  = the filename of the tfstate file (example: myapp.tfstate)
+```
 
 To init Terraform with the Azure remote backend execute the following command:
 
