@@ -84,9 +84,7 @@ Mapping
 
 ### Configure the terraform provider
 
-[Azure Terraform Provider Config](4.TerraformFiles/provider.tf)
-
-the provider config is empty. We will assign the appropriate information at runtime through Terraform environment variables
+We will assign the appropriate information at runtime through Terraform environment variables
 
 These are:
 
@@ -180,11 +178,14 @@ We need to perform the following steps:
 
 ### Configure Terraform to use the remote backend
 
-[Terraform Backend Configuration](4.TerraformFiles/backend.tf)
-[Variables for configuration](4.TerraformFiles/backend.tfvars)
-
-Additionally we need to define another environment variable (ARM_ACCESS_KEY).
+We need to define another environment variable (ARM_ACCESS_KEY).
 This is where the storage account key is going.
+
+In my backend.tfvars file is the following content:
+
+storage_account_name = Name of the storage account that you just created
+container_name       = The container inside of the storage account the you just created
+key                  = the filename of the tfstate file (example: myapp.tfstate)
 
 To init Terraform with the Azure remote backend execute the following command:
 
