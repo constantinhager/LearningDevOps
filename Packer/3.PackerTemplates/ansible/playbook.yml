@@ -1,0 +1,13 @@
+---
+- hosts: 127.0.0.1
+  become: true
+  connection: local
+  tasks:
+  - name: installing Nginx latest version
+    apt:
+        name: nginx
+        state: latest
+  - name: starting Nginx service
+    service:
+        name: nginx
+        state: started
