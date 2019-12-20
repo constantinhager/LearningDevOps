@@ -11,7 +11,7 @@
     - [Building an Azure image with the Packer template](#building-an-azure-image-with-the-packer-template)
   - [Using Ansible in a Packer template](#using-ansible-in-a-packer-template)
   - [Executing Packer](#executing-packer)
-      - [Configuring Packer to authenticate to Azure](#configuring-packer-to-authenticate-to-azure)
+    - [Configuring Packer to authenticate to Azure](#configuring-packer-to-authenticate-to-azure)
     - [Checking the validity of the Packer template](#checking-the-validity-of-the-packer-template)
     - [Running Packer to generate our VM image](#running-packer-to-generate-our-vm-image)
   - [Using a Packer image with Terraform](#using-a-packer-image-with-terraform)
@@ -277,7 +277,7 @@ For creating a Packer image in Azure we need to perform the following steps:
 - Check our Packer template.
 - Run Packer to generate our image.
 
-#### Configuring Packer to authenticate to Azure
+### Configuring Packer to authenticate to Azure
 
 We have to declare the following 4 environment variables:
 
