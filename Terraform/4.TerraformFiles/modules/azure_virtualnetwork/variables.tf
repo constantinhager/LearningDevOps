@@ -4,7 +4,7 @@ variable "vnetName" {
 
 variable "vnetaddressspace" {
   description = "the addressspace for the vnet. e.g. 10.1.0.0/16"
-  type        = "list"
+  type        = list(string)
 }
 
 variable "subnetname" {
