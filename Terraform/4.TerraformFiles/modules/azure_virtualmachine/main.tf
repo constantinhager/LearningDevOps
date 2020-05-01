@@ -1,30 +1,30 @@
 resource "azurerm_network_interface" "LearningDevOpsNIC" {
-  name                = "${var.vmNicName}"
-  location            = "${var.location}"
-  resource_group_name = "${var.resourcegroupName}"
+  name                = var.vmNicName
+  location            = var.location
+  resource_group_name = var.resourcegroupName
 
   ip_configuration {
     name                          = "LearningDevOpsIP"
-    subnet_id                     = "${var.subnetid}"
+    subnet_id                     = var.subnetid
     private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = "${azurerm_public_ip.LearningDevOpsPIP.id}"
+    public_ip_address_id          = azurerm_public_ip.LearningDevOpsPIP.id
   }
 }
 
 resource "azurerm_public_ip" "LearningDevOpsPIP" {
   name                = "LearningDevOpsPIP"
-  location            = "${var.location}"
-  resource_group_name = "${var.resourcegroupName}"
+  location            = var.location
+  resource_group_name = var.resourcegroupName
   allocation_method   = "Dynamic"
   domain_name_label   = "learningdevopspiplabel"
 }
 
 resource "azurerm_virtual_machine" "LearningDevOpsVM" {
-  name                  = "${var.vmName}"
-  location              = "${var.location}"
-  resource_group_name   = "${var.resourcegroupName}"
-  vm_size               = "${var.vmSize}"
-  network_interface_ids = ["${azurerm_network_interface.LearningDevOpsNIC.id}"]
+  name                  = var.vmName
+  location              = var.location
+  resource_group_name   = var.resourcegroupName
+  vm_size               = var.vmSize
+  network_interface_ids = [azurerm_network_interface.LearningDevOpsNIC.id]
 
   storage_image_reference {
     publisher = "Canonical"
@@ -52,6 +52,6 @@ resource "azurerm_virtual_machine" "LearningDevOpsVM" {
 
   boot_diagnostics {
     enabled     = true
-    storage_uri = "${var.storageuri}"
+    storage_uri = var.storageuri
   }
 }
